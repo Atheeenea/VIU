@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Misión: Del Plano al Bloque</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Earthy Craft -->
+    <!-- Application Structure Plan: Se ha diseñado una SPA tipo "Centro de Misión" o dashboard interactivo. La estructura abandona el formato lineal del documento para ofrecer una experiencia de usuario no lineal, centrada en la exploración. Consta de un encabezado con el título de la misión, una barra de navegación fija para un acceso rápido a las secciones clave (La Misión, Fases, Evaluación, Recursos), y secciones modulares interactivas. Se eligió esta estructura porque transforma la información del proyecto en una aventura gamificada, permitiendo a los alumnos consultar rápidamente las reglas, el progreso y las recompensas, lo que aumenta la motivación y la claridad. -->
+    <!-- Visualization & Content Choices: 1. Fases del Proyecto -> Pestañas interactivas con JS. Objetivo: Organizar. Justificación: Segmenta el proceso en pasos manejables, creando una sensación de progresión y evitando la sobrecarga de información. 2. Ponderación de Evaluación -> Gráfico de Anillo (Doughnut Chart) con Chart.js. Objetivo: Informar/Comparar. Justificación: Visualiza de forma instantánea el peso de cada componente en la nota final, siendo mucho más efectivo que una tabla. 3. Insignias de Gamificación -> Cuadrícula con tooltips interactivos al pasar el ratón. Objetivo: Motivar/Informar. Justificación: Convierte los criterios de excelencia en logros coleccionables y tangibles, fomentando la implicación. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        h1, h2, h3 { font-family: 'Press Start 2P', cursive; }
+        .tab-active { border-color: #10B981; color: #10B981; }
+        .tab-inactive { border-color: #D1D5DB; color: #6B7280; }
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .has-tooltip:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="bg-stone-100 text-stone-800">
+
+    <header class="bg-stone-800 text-white py-8 shadow-lg">
+        <div class="container mx-auto px-6 text-center">
+            <h1 class="text-3xl md:text-5xl">Misión: Del Plano al Bloque</h1>
+            <p class="mt-4 text-stone-300 text-lg font-body">¡Tu aventura como arquitecto de Minecraftia comienza ahora!</p>
+        </div>
+    </header>
+
+    <nav class="sticky top-0 bg-white/80 backdrop-blur-sm shadow-md z-50">
+        <div class="container mx-auto px-6">
+            <div class="flex justify-center items-center h-16 space-x-4 md:space-x-8">
+                <a href="#mision" class="text-stone-600 hover:text-emerald-600 font-semibold transition">La Misión</a>
+                <a href="#fases" class="text-stone-600 hover:text-emerald-600 font-semibold transition">Fases</a>
+                <a href="#evaluacion" class="text-stone-600 hover:text-emerald-600 font-semibold transition">Evaluación</a>
+                <a href="#recursos" class="text-stone-600 hover:text-emerald-600 font-semibold transition">Recursos</a>
+            </div>
+        </div>
+    </nav>
+
+    <main class="container mx-auto px-6 py-12">
+
+        <section id="mision" class="text-center mb-16 scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl mb-6 text-emerald-700">¿Estás listo para el desafío?</h2>
+            <p class="max-w-3xl mx-auto text-lg leading-relaxed">
+                ¡Bienvenidos, futuros arquitectos! El universo de Minecraftia necesita vuestro ingenio. Vuestra misión es transformar un plano técnico en una construcción legendaria. Usad vuestros conocimientos de geometría y vuestra creatividad para diseñar, planificar y construir una edificación que deje huella. ¡El trabajo en equipo será la clave para alcanzar la gloria!
+            </p>
+        </section>
+
+        <section id="fases" class="mb-16 scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl text-center mb-8 text-emerald-700">Fases de la Misión</h2>
+            <div class="max-w-4xl mx-auto">
+                <div class="flex flex-col sm:flex-row justify-center border-b border-gray-300 mb-6">
+                    <button data-tab="fase1" class="tab-button flex-1 py-3 px-4 text-sm md:text-base font-semibold border-b-4 transition tab-active">Nivel 1: Conceptualización</button>
+                    <button data-tab="fase2" class="tab-button flex-1 py-3 px-4 text-sm md:text-base font-semibold border-b-4 transition tab-inactive">Nivel 2: Diseño Técnico</button>
+                    <button data-tab="fase3" class="tab-button flex-1 py-3 px-4 text-sm md:text-base font-semibold border-b-4 transition tab-inactive">Nivel 3: Construcción</button>
+                    <button data-tab="fase4" class="tab-button flex-1 py-3 px-4 text-sm md:text-base font-semibold border-b-4 transition tab-inactive">Nivel 4: Documentación</button>
+                </div>
+                <div id="tab-content" class="bg-white p-6 md:p-8 rounded-lg shadow-lg">
+                    <div id="fase1" class="tab-pane active">
+                        <h3 class="text-xl font-bold text-stone-700 mb-4">Fase 1: Conceptualización (Semana 1)</h3>
+                        <p class="mb-4">El viaje comienza aquí. Recibirás tu encargo directamente del "cliente" y explorarás el terreno asignado en Minecraft. Tu objetivo es plasmar las primeras ideas en papel.</p>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li><strong class="font-semibold">Análisis del encargo:</strong> Entiende los requisitos de tu cliente.</li>
+                            <li><strong class="font-semibold">Visita al "solar":</strong> Explora el bioma y elige la ubicación perfecta.</li>
+                            <li><strong class="font-semibold">Bocetos iniciales:</strong> Dibuja tus primeras ideas. ¡No hay límites para la creatividad!</li>
+                        </ul>
+                    </div>
+                    <div id="fase2" class="tab-pane hidden">
+                        <h3 class="text-xl font-bold text-stone-700 mb-4">Fase 2: Diseño Técnico (Semanas 2-3)</h3>
+                        <p class="mb-4">Es hora de la precisión. Transformarás tus bocetos en planos técnicos detallados. Cada línea y cada medida cuenta para que tu construcción sea viable.</p>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li><strong class="font-semibold">Planos de planta:</strong> Define la distribución de los espacios.</li>
+                            <li><strong class="font-semibold">Alzados y sección:</strong> Muestra cómo se verá tu edificio desde fuera y por dentro.</li>
+                            <li><strong class="font-semibold">Perspectiva isométrica:</strong> Crea una vista 3D en papel para visualizar el volumen final.</li>
+                        </ul>
+                    </div>
+                    <div id="fase3" class="tab-pane hidden">
+                        <h3 class="text-xl font-bold text-stone-700 mb-4">Fase 3: Construcción y Verificación (Semanas 4-5)</h3>
+                        <p class="mb-4">¡Manos a la obra! Lleva tus planos al mundo de Minecraft y empieza a construir bloque a bloque. Esta es la prueba de fuego para tu diseño.</p>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li><strong class="font-semibold">Construcción fiel:</strong> Sigue tus planos al pie de la letra.</li>
+                            <li><strong class="font-semibold">Revisión y ajuste:</strong> Comprueba que la construcción coincide con el diseño. ¿Hay errores? ¡Es el momento de corregirlos!</li>
+                            <li><strong class="font-semibold">Capturas comparativas:</strong> Fotografía tu obra desde los mismos ángulos que tus planos.</li>
+                        </ul>
+                    </div>
+                    <div id="fase4" class="tab-pane hidden">
+                        <h3 class="text-xl font-bold text-stone-700 mb-4">Fase 4: Documentación y Comunicación (Semana 6-7)</h3>
+                        <p class="mb-4">Una gran obra merece una gran presentación. Prepara un dossier profesional que muestre todo vuestro trabajo y compártelo con el mundo.</p>
+                        <ul class="list-disc list-inside space-y-2">
+                            <li><strong class="font-semibold">Dossier de Arquitectura:</strong> Reúne planos, memoria y capturas en un documento final.</li>
+                            <li><strong class="font-semibold">Tour Virtual:</strong> Graba un vídeo mostrando vuestra creación.</li>
+                            <li><strong class="font-semibold">Exposición final:</strong> ¡Presenta tu proyecto y demuestra por qué tu equipo es el mejor!</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="evaluacion" class="mb-16 scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl text-center mb-8 text-emerald-700">Evaluación y Recompensas</h2>
+            <div class="grid md:grid-cols-2 gap-8 items-center">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl text-center font-bold text-stone-700 mb-4">Ponderación de la Nota Final</h3>
+                    <div class="chart-container h-64 md:h-80 w-full max-w-sm mx-auto">
+                        <canvas id="gradeChart"></canvas>
+                    </div>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl text-center font-bold text-stone-700 mb-6">Insignias de Maestría</h3>
+                    <p class="text-center text-stone-600 mb-6">Completa hazañas especiales para ganar insignias únicas y demostrar tu valía.</p>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                        <div class="relative has-tooltip flex flex-col items-center">
+                            <div class="text-5xl mb-2">📏</div>
+                            <span class="font-semibold text-sm">Precisión Métrica</span>
+                            <div class="tooltip absolute bottom-full mb-2 w-48 bg-stone-800 text-white text-xs rounded py-2 px-3">Planos sin errores de acotación. ¡La medida perfecta!</div>
+                        </div>
+                        <div class="relative has-tooltip flex flex-col items-center">
+                            <div class="text-5xl mb-2">🌲</div>
+                            <span class="font-semibold text-sm">Maestro del Terreno</span>
+                            <div class="tooltip absolute bottom-full mb-2 w-48 bg-stone-800 text-white text-xs rounded py-2 px-3">La mejor integración de la construcción en el bioma de Taiga.</div>
+                        </div>
+                        <div class="relative has-tooltip flex flex-col items-center">
+                            <div class="text-5xl mb-2">⚙️</div>
+                            <span class="font-semibold text-sm">Ingeniero Eficiente</span>
+                            <div class="tooltip absolute bottom-full mb-2 w-48 bg-stone-800 text-white text-xs rounded py-2 px-3">Diseño funcional y optimizado con el menor número de bloques.</div>
+                        </div>
+                        <div class="relative has-tooltip flex flex-col items-center">
+                            <div class="text-5xl mb-2">📣</div>
+                            <span class="font-semibold text-sm">Comunicador Experto</span>
+                            <div class="tooltip absolute bottom-full mb-2 w-48 bg-stone-800 text-white text-xs rounded py-2 px-3">La exposición final más clara, profesional y convincente.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="recursos" class="scroll-mt-20">
+            <h2 class="text-2xl md:text-3xl text-center mb-8 text-emerald-700">Arsenal del Arquitecto</h2>
+            <div class="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-stone-700 mb-4">Herramientas de Dibujo</h3>
+                    <ul class="list-none space-y-2">
+                        <li class="flex items-center"><span class="text-emerald-500 mr-3 text-xl">✏️</span> Compás, escuadra y cartabón</li>
+                        <li class="flex items-center"><span class="text-emerald-500 mr-3 text-xl">📐</span> Escalímetro y papel DIN A3</li>
+                        <li class="flex items-center"><span class="text-emerald-500 mr-3 text-xl">📄</span> Papeles de isométrico</li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-lg">
+                    <h3 class="text-xl font-bold text-stone-700 mb-4">Recursos Digitales</h3>
+                    <ul class="list-none space-y-2">
+                        <li class="flex items-center"><span class="text-emerald-500 mr-3 text-xl">🖥️</span> Ordenadores con acceso a internet</li>
+                        <li class="flex items-center"><span class="text-emerald-500 mr-3 text-xl">🧱</span> Licencias de Minecraft</li>
+                        <li class="flex items-center"><span class="text-emerald-500 mr-3 text-xl">📹</span> Software de captura de vídeo/pantalla</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="bg-stone-800 text-white mt-16 py-6">
+        <div class="container mx-auto px-6 text-center text-stone-400">
+            <p>Proyecto de Dibujo Técnico I |1º Bachilletato | Curso 2024-2025</p>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tabs functionality
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const targetTab = button.dataset.tab;
+
+                    tabButtons.forEach(btn => {
+                        btn.classList.remove('tab-active');
+                        btn.classList.add('tab-inactive');
+                    });
+                    button.classList.add('tab-active');
+                    button.classList.remove('tab-inactive');
+
+                    tabPanes.forEach(pane => {
+                        if (pane.id === targetTab) {
+                            pane.classList.remove('hidden');
+                        } else {
+                            pane.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Smooth scroll for navigation
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+
+            // Chart.js Grade Distribution Chart
+            const ctx = document.getElementById('gradeChart').getContext('2d');
+            const gradeChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Planos Técnicos', 'Diseño y 3D', 'Presentación Final', 'Portfolio Proceso', 'Autoevaluación'],
+                    datasets: [{
+                        label: 'Ponderación de la Nota',
+                        data: [50, 20, 15, 10, 5],
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.8)', // emerald-500
+                            'rgba(5, 150, 105, 0.8)', // emerald-600
+                            'rgba(4, 120, 87, 0.8)', // emerald-700
+                            'rgba(6, 95, 70, 0.8)', // emerald-800
+                            'rgba(6, 78, 59, 0.8)' // emerald-900
+                        ],
+                        borderColor: [
+                            'rgba(255, 255, 255, 1)'
+                        ],
+                        borderWidth: 2,
+                        hoverOffset: 8
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#44403c', // stone-700
+                                font: {
+                                    family: "'Inter', sans-serif",
+                                    size: 12
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    cutout: '50%'
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
